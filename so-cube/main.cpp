@@ -13,33 +13,31 @@ float Oy = window.getSize().y % 2 == 0 ? float(window.getSize().y + 1) / 2 : flo
 class Polygon {
 public:
     explicit Polygon(float d) : depth(d), displacement(0, 0, 0) {
-        for(auto i: vec) {
-            i.first = {0, 0, 0};
-            i.second = Color::Transparent;
-        }
+        color = Color::Transparent;
     }
 
     void move(Vector3f v, float alpha, float beta, float gamma) {
         unprojection();
         for (auto &i: vec) {
-            i.first -= displacement;
+            i -= displacement;
 
-            i.first = {cos(beta) * cos(gamma) * i.first.x - sin(gamma) * cos(beta) * i.first.y + sin(beta) * i.first.z,
-                       sin(alpha) * sin(beta) * cos(gamma) * i.first.x + sin(gamma) * cos(alpha) * i.first.x -
-                       sin(alpha) * sin(beta) * sin(gamma) * i.first.y + cos(alpha) * cos(gamma) * i.first.y -
-                       sin(alpha) * cos(beta) * i.first.z,
-                       sin(alpha) * sin(gamma) * i.first.x - sin(beta) * cos(alpha) * cos(gamma) * i.first.x +
-                       sin(alpha) * cos(gamma) * i.first.y + sin(beta) * sin(gamma) * cos(alpha) * i.first.y +
-                       cos(alpha) * cos(beta) * i.first.z};
+            i = {cos(beta) * cos(gamma) * i.x - sin(gamma) * cos(beta) * i.y + sin(beta) * i.z,
+                       sin(alpha) * sin(beta) * cos(gamma) * i.x + sin(gamma) * cos(alpha) * i.x -
+                       sin(alpha) * sin(beta) * sin(gamma) * i.y + cos(alpha) * cos(gamma) * i.y -
+                       sin(alpha) * cos(beta) * i.z,
+                       sin(alpha) * sin(gamma) * i.x - sin(beta) * cos(alpha) * cos(gamma) * i.x +
+                       sin(alpha) * cos(gamma) * i.y + sin(beta) * sin(gamma) * cos(alpha) * i.y +
+                       cos(alpha) * cos(beta) * i.z};
 
-            i.first += (displacement + v);
+            i += (displacement + v);
         }
         displacement += v;
         projection();
     }
 
-    void setUp(vector<pair<Vector3f, Color>> v) {
-        this->vec = std::move(v);
+    void setUp(vector<Vector3f> v, Color c) {
+        vec = std::move(v);
+        color = c;
         projection();
     }
 
@@ -50,7 +48,7 @@ public:
     vector<Vertex> getVer() {
         vector<Vertex> v;
         for(auto & i : vec)
-            v.emplace_back(Vector2f(tx(i.first.x), ty(i.first.y)), i.second);
+            v.emplace_back(Vector2f(tx(i.x), ty(i.y)), color);
         return v;
     }
 
@@ -66,17 +64,19 @@ public:
     bool operator<(const Polygon& other) const {
         return v_length(center(vec)) < v_length(center(other.vec));
     }
+    ~Polygon() = default;
 private:
-    vector<pair<sf::Vector3f, Color>> vec;
+    vector<Vector3f> vec;
     Vector3f displacement;
+    Color color;
     float depth;
 
-    [[nodiscard]] Vector3f center(const vector<pair<Vector3f, Color>>& v) const {
+    [[nodiscard]] Vector3f center(const vector<Vector3f>& v) const {
         float x(0), y(0), z(0);
-        for(auto & i : v) {
-            x += i.first.x;
-            y += i.first.y;
-            z += i.first.z;
+        for(auto & i: v) {
+            x += i.x;
+            y += i.y;
+            z += i.z;
         } return Vector3f(x, y, z) / float(vec.size());
     }
 
@@ -93,32 +93,21 @@ private:
     }
 
     void projection() {
-        for(pair<Vector3f, Color> & i : vec) {
-            i.first.x *= depth / i.first.z;
-            i.first.y *= depth / i.first.z;
+        for(Vector3f & i : vec) {
+            i.x *= depth / i.z;
+            i.y *= depth / i.z;
         }
     }
 
     void unprojection() {
-        for(pair<Vector3f, Color> & i : vec) {
-            i.first.x /= depth / i.first.z;
-            i.first.y /= depth / i.first.z;
+        for(Vector3f & i : vec) {
+            i.x /= depth / i.z;
+            i.y /= depth / i.z;
         }
     }
 };
 
-float a = 130;
-Vector3f v0(a, a, a);
-Vector3f v1(-a, a, a);
-Vector3f v2(a, -a, a);
-Vector3f v3(-a, -a, a);
-Vector3f v4(a, a, -a);
-Vector3f v5(-a, a, -a);
-Vector3f v6(a, -a, -a);
-Vector3f v7(-a, -a, -a);
-
-//vector<Polygon> white_side;
-//vector<vector<pair<Vector3f, Color>>> ws(9);
+void rotate(vector<Polygon>& v);
 
 bool compare(const Polygon& left,  const Polygon& right) {
     return left > right;
@@ -127,57 +116,58 @@ bool compare(const Polygon& left,  const Polygon& right) {
 void rotate(vector<Polygon>& v, float delta);
 
 int main() {
-    vector<vector<pair<Vector3f, Color>>> v(6);
-    vector<Polygon> vp;
+    //init
+    float a = 130;
     float x, y, z, alpha, beta, gamma;
+    vector<vector<vector<Vector3f>>> v(6, vector<vector<Vector3f>>(9, vector<Vector3f>(4)));
 
-    for (int i = 0; i < v.size(); i++)
-        vp.emplace_back(600);
+    vector<Polygon> white_side;
+    vector<Polygon> yellow_side;
+    vector<Polygon> blue_side;
+    vector<Polygon> green_side;
+    vector<Polygon> orange_side;
+    vector<Polygon> red_side;
 
-    vector<Color> colors = {Color::Yellow, Color::White, Color::Blue, Color::Green, Color(255, 165, 0, 255),
-                            Color::Red};
+    vector<Color> colors = {Color::White, Color::Yellow, Color::Blue,
+                            Color::Green, Color(255, 165, 0, 255), Color::Red};
 
-    for (int i = 0; i < 6; i++)
-        for (int j = 0; j < 4; j++)
-            v[i].emplace_back(Vector3f(), colors[i]);
-
-    v[0][0].first = v0;
-    v[0][1].first = v1;
-    v[0][2].first = v2;
-    v[0][3].first = v3;
-
-    v[1][0].first = v4;
-    v[1][1].first = v5;
-    v[1][2].first = v6;
-    v[1][3].first = v7;
-
-    v[2][0].first = v0;
-    v[2][1].first = v2;
-    v[2][2].first = v4;
-    v[2][3].first = v6;
-
-    v[3][0].first = v1;
-    v[3][1].first = v3;
-    v[3][2].first = v5;
-    v[3][3].first = v7;
-
-    v[4][0].first = v0;
-    v[4][1].first = v1;
-    v[4][2].first = v4;
-    v[4][3].first = v5;
-
-    v[5][0].first = v2;
-    v[5][1].first = v3;
-    v[5][2].first = v6;
-    v[5][3].first = v7;
-
-    for (int i = 0; i < v.size(); i++) {
-        vp[i].setUp(v[i]);
-        vp[i].move({0, 0, 600}, M_PI / 2, 0, 0);
-        vp[i].move({0, 0, 0}, 0, M_PI / 4, 0);
-        vp[i].move({0, 0, 0}, -M_PI / 8, 0, 0);
+    for (int i = 0; i < 9; i++) {
+        white_side.emplace_back(600);
+        yellow_side.emplace_back(600);
+        blue_side.emplace_back(600);
+        green_side.emplace_back(600);
+        orange_side.emplace_back(600);
+        red_side.emplace_back(600);
+    }
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0, flag; k < 4; k++) {
+                flag = k;
+                v[0][i * 3 + j][k] = Vector3f(float(5 * (j + 1) + 80 * j + 80 * (flag % 2)) - a, 0, -a);
+                flag /= 2;
+                v[0][i * 3 + j][k] += Vector3f(0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a, 0);
+                flag = k;
+                v[5][i * 3 + j][k] = Vector3f(float(5 * (j + 1) + 80 * j + 80 * (flag % 2)) - a, -a, 0);
+                flag /= 2;
+                v[5][i * 3 + j][k] += Vector3f(0, 0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a);
+                flag = k;
+                v[2][i * 3 + j][k] = Vector3f(-a, float(5 * (j + 1) + 80 * j + 80 * (flag % 2)) - a, 0);
+                flag /= 2;
+                v[2][i * 3 + j][k] += Vector3f(0, 0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a);
+            }
+        }
     }
 
+    for (int i = 0; i < 9; i++) {
+        white_side[i].setUp(v[0][i], Color::White);
+        white_side[i].move({0, 0, 600}, 0, 0, 0);
+
+        yellow_side[i].setUp(v[5][i], Color::Red);
+        yellow_side[i].move({0, 0, 600}, 0, 0, 0);
+
+        green_side[i].setUp(v[2][i], Color::Green);
+        green_side[i].move({0, 0, 600}, 0, 0, 0);
+    }
 
     while (window.isOpen()) {
         Event event{};
@@ -201,31 +191,39 @@ int main() {
                 if (event.key.code == sf::Keyboard::I) gamma = -M_PI / 60;
                 if (event.key.code == sf::Keyboard::K) gamma = M_PI / 60;
 
-                for(auto &i: vp)
+                for (auto &i: white_side)
                     i.move({x, y, z}, alpha, beta, gamma);
             }
         }
 
         window.clear();
 
-        for(auto& i: vp) {
-            i.move({0, 0, 0}, M_PI / 8, 0, 0);
-            i.move({0, 0, 0}, 0, -M_PI / 4, 0);
+        rotate(white_side);
+        rotate(yellow_side);
+        rotate(green_side);
 
-            i.move({0, 0, 0}, 0, -M_PI / (360 * 50), 0);
+        std::sort(begin(white_side), end(white_side), compare);
+        std::sort(begin(yellow_side), end(yellow_side), compare);
+        std::sort(begin(green_side), end(green_side), compare);
 
-            i.move({0, 0, 0}, 0, M_PI / 4, 0);
-            i.move({0, 0, 0}, -M_PI / 8, 0, 0);
-        }
-
-        std::sort(begin(vp), end(vp), compare);
-
-        for (auto i: vp)
+        for (auto i: yellow_side)
             window.draw(&i.getVer()[0], i.size(), TriangleStrip);
-
-//        for (auto i : white_side)
-//            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
-
+        for (auto i: green_side)
+            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+        for (auto i: white_side)
+            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
         window.display();
+    }
+}
+
+void rotate(vector<Polygon>& v) {
+    for (auto &i: v) {
+//        i.move({0, 0, 0}, M_PI / 8, 0, 0);
+//        i.move({0, 0, 0}, 0, -M_PI / 4, 0);
+
+        i.move({0, 0, 0}, 0, -M_PI / (360 * 50), 0);
+
+//        i.move({0, 0, 0}, 0, M_PI / 4, 0);
+//        i.move({0, 0, 0}, -M_PI / 8, 0, 0);
     }
 }
