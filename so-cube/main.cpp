@@ -2,6 +2,8 @@
 #include <iostream>
 #include <utility>
 
+#define F(x) float(x)
+
 using namespace std;
 using namespace sf;
 
@@ -117,7 +119,7 @@ bool compare(const Polygon& left,  const Polygon& right) {
 
 int main() {
     //init
-    float a = 130;
+    float a = 130, b = 10;
     float x, y, z, alpha, beta, gamma;
     vector<vector<vector<Vector3f>>> v(6, vector<vector<Vector3f>>(9, vector<Vector3f>(4)));
     vector<Color> colors = {Color::White, Color::Yellow, Color::Blue,
@@ -128,32 +130,33 @@ int main() {
         sides.emplace_back(600);
 
     for (int i = 0; i < 3; i++) {
+        float c = (2 * a - 4 * b) / 3;
         for (int j = 0; j < 3; j++) {
             for (int k = 0, flag; k < 4; k++) {
                 flag = k;
-                v[0][i * 3 + j][k] = Vector3f(float(5 * (j + 1) + 80 * j + 80 * (flag % 2)) - a, 0, -a);
+                v[0][i * 3 + j][k] = Vector3f((b * F(j + 1) + c * F(j) + c * F(flag % 2)) - a, 0, -a);
                 flag /= 2;
-                v[0][i * 3 + j][k] += Vector3f(0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a, 0);
+                v[0][i * 3 + j][k] += Vector3f(0, (b * F(i + 1) + c * F(i) + c * F(flag % 2)) - a, 0);
                 flag = k;
-                v[5][i * 3 + j][k] = Vector3f(float(5 * (j + 1) + 80 * j + 80 * (flag % 2)) - a, -a, 0);
+                v[1][i * 3 + j][k] = Vector3f(a - (b * F(j + 1) + c * F(j) + c * F(flag % 2)), 0, a);
                 flag /= 2;
-                v[5][i * 3 + j][k] += Vector3f(0, 0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a);
+                v[1][i * 3 + j][k] += Vector3f(0, a - (b * F(i + 1) + c * F(i) + c * F(flag % 2)), 0);
                 flag = k;
-                v[3][i * 3 + j][k] = Vector3f(-a, float(5 * (j + 1) + 80 * j + 80 * (flag % 2)) - a, 0);
+                v[2][i * 3 + j][k] = Vector3f(a, a - (b * F(j + 1) + c * F(j) + c * F(flag % 2)), 0);
                 flag /= 2;
-                v[3][i * 3 + j][k] += Vector3f(0, 0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a);
+                v[2][i * 3 + j][k] += Vector3f(0, 0, a - (b * F(i + 1) + c * F(i) + c * F(flag % 2)));
                 flag = k;
-                v[1][i * 3 + j][k] = Vector3f(a - float(5 * (j + 1) + 80 * j + 80 * (flag % 2)), 0, a);
+                v[3][i * 3 + j][k] = Vector3f(-a, (b * F(j + 1) + c * F(j) + c * F(flag % 2)) - a, 0);
                 flag /= 2;
-                v[1][i * 3 + j][k] += Vector3f(0, a - float(5 * (i + 1) + 80 * i + 80 * (flag % 2)), 0);
+                v[3][i * 3 + j][k] += Vector3f(0, 0, (b * F(i + 1) + c * F(i) + c * F(flag % 2)) - a);
                 flag = k;
-                v[4][i * 3 + j][k] = Vector3f(a - float(5 * (j + 1) + 80 * j + 80 * (flag % 2)), a, 0);
+                v[4][i * 3 + j][k] = Vector3f(a - (b * F(j + 1) + c * F(j) + c * F(flag % 2)), a, 0);
                 flag /= 2;
-                v[4][i * 3 + j][k] += Vector3f(0, 0, a - float(5 * (i + 1) + 80 * i + 80 * (flag % 2)));
+                v[4][i * 3 + j][k] += Vector3f(0, 0, a - (b * F(i + 1) + c * F(i) + c * F(flag % 2)));
                 flag = k;
-                v[2][i * 3 + j][k] = Vector3f(a, a - float(5 * (j + 1) + 80 * j + 80 * (flag % 2)), 0);
+                v[5][i * 3 + j][k] = Vector3f((b * F(j + 1) + c * F(j) + c * F(flag % 2)) - a, -a, 0);
                 flag /= 2;
-                v[2][i * 3 + j][k] += Vector3f(0, 0, a - float(5 * (i + 1) + 80 * i + 80 * (flag % 2)));
+                v[5][i * 3 + j][k] += Vector3f(0, 0, (b * F(i + 1) + c * F(i) + c * F(flag % 2)) - a);
             }
         }
     } //create polygons
