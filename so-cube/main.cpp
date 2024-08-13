@@ -109,6 +109,19 @@ private:
     }
 };
 
+void FRot(vector<Polygon>& v);
+void _FRot(vector<Polygon>& v);
+void DRot(vector<Polygon>& v);
+void _DRot(vector<Polygon>& v);
+void URot(vector<Polygon>& v);
+void _URot(vector<Polygon>& v);
+void BRot(vector<Polygon>& v);
+void _BRot(vector<Polygon>& v);
+void RRot(vector<Polygon>& v);
+void _RRot(vector<Polygon>& v);
+void LRot(vector<Polygon>& v);
+void _LRot(vector<Polygon>& v);
+
 void rotate(vector<Polygon>& v);
 
 bool compare(const Polygon& left,  const Polygon& right) {
@@ -164,9 +177,9 @@ int main() {
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 9; j++) {
             sides[i * 9 + j].setUp(v[i][j], colors[i]);
-            sides[i * 9 + j].move({0, 0, 600}, M_PI / 2, 0, 0);
-            sides[i * 9 + j].move({0, 0, 0}, 0, M_PI / 4, 0);
-            sides[i * 9 + j].move({0, 0, 0}, -M_PI / 8, 0, 0);
+            sides[i * 9 + j].move({0, 0, 600}, 0, 0, 0);
+            sides[i * 9 + j].move({0, 0, 0}, 0, 0, M_PI / 2);
+            sides[i * 9 + j].move({0, 0, 0}, M_PI / 2, 0, 0);
         }
     } //setup/move
 
@@ -176,45 +189,276 @@ int main() {
         while (window.pollEvent(event)) {
             if (event.type == Event::Closed) window.close();
 
+            window.clear();
             if (event.type == sf::Event::KeyPressed) {
                 x = y = z = alpha = beta = gamma = 0;
 
-                if (event.key.code == sf::Keyboard::S) y = -50;
-                if (event.key.code == sf::Keyboard::W) y = 50;
-                if (event.key.code == sf::Keyboard::A) x = -50;
-                if (event.key.code == sf::Keyboard::D) x = 50;
-                if (event.key.code == sf::Keyboard::Q) z = -50;
-                if (event.key.code == sf::Keyboard::E) z = 50;
-                if (event.key.code == sf::Keyboard::L) alpha = -M_PI / 60;
-                if (event.key.code == sf::Keyboard::J) alpha = M_PI / 60;
-                if (event.key.code == sf::Keyboard::O) beta = -M_PI / 60;
-                if (event.key.code == sf::Keyboard::U) beta = M_PI / 60;
-                if (event.key.code == sf::Keyboard::I) gamma = -M_PI / 60;
-                if (event.key.code == sf::Keyboard::K) gamma = M_PI / 60;
+                if (event.key.code == sf::Keyboard::Down) y = -50;
+                if (event.key.code == sf::Keyboard::Up) y = 50;
+                if (event.key.code == sf::Keyboard::Left) x = -50;
+                if (event.key.code == sf::Keyboard::Right) x = 50;
+                if (event.key.code == sf::Keyboard::Equal) z = -50;
+                if (event.key.code == sf::Keyboard::Hyphen) z = 50;
+                if (event.key.code == sf::Keyboard::Num1) alpha = -M_PI / 60;
+                if (event.key.code == sf::Keyboard::Num2) alpha = M_PI / 60;
+                if (event.key.code == sf::Keyboard::Num3) beta = -M_PI / 60;
+                if (event.key.code == sf::Keyboard::Num4) beta = M_PI / 60;
+                if (event.key.code == sf::Keyboard::Num5) gamma = -M_PI / 60;
+                if (event.key.code == sf::Keyboard::Num6) gamma = M_PI / 60;
+                if (event.key.code == sf::Keyboard::F) {
+                    std::sort(begin(sides), end(sides), compare);
+
+                    for (int frames = 0; frames < 1000; frames++) {
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, M_PI / 2000);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::G) {
+                    std::sort(begin(sides), end(sides), compare);
+
+                    for (int frames = 0; frames < 1000; frames++) {
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, -M_PI / 2000);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::B) {
+                    for (int frames = 0; frames < 1000; frames++) {
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, M_PI, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, M_PI / 2000);
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, -M_PI, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::N) {
+                    for (int frames = 0; frames < 1000; frames++) {
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, M_PI, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, -M_PI / 2000);
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, -M_PI, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::U) {
+                    for (int frames = 0; frames < 1000; frames++) {
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, -M_PI / 2, 0, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, -M_PI / 2000);
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, M_PI / 2, 0, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::I) {
+                    for (int frames = 0; frames < 1000; frames++) {
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, -M_PI / 2, 0, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, M_PI / 2000);
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, M_PI / 2, 0, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::R) {
+                    for (int frames = 0; frames < 1000; frames++) {
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, M_PI / 2, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, -M_PI / 2000);
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, -M_PI / 2, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::T) {
+                    for (int frames = 0; frames < 1000; frames++) {
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, M_PI / 2, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, M_PI / 2000);
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, -M_PI / 2, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::L) {
+                    for (int frames = 0; frames < 1000; frames++) {
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, -M_PI / 2, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, -M_PI / 2000);
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, M_PI / 2, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
+
+                if (event.key.code == sf::Keyboard::K) {
+                    for (int frames = 0; frames < 1000; frames++) {
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, -M_PI / 2, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        for (int i = 33; i < 54; i++)
+                            sides[i].move({0, 0, 0}, 0, 0, M_PI / 2000);
+
+                        for (auto &i: sides)
+                            i.move({0, 0, 0}, 0, M_PI / 2, 0);
+
+                        std::sort(begin(sides), end(sides), compare);
+
+                        window.clear();
+                        for (auto &i: sides)
+                            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
+                        window.display();
+                    }
+                }
 
                 for (auto &i: sides)
                     i.move({x, y, z}, alpha, beta, gamma);
             } //press key check
         }
+        std::sort(begin(sides), end(sides), compare);
 
         window.clear();
-
-        rotate(sides);
-        std::sort(begin(sides), end(sides), compare);
-        for (auto i: sides)
+        for (auto &i: sides)
             window.draw(&i.getVer()[0], i.size(), TriangleStrip);
         window.display();
-    }
+
+    } //rendering
 }
 
 void rotate(vector<Polygon>& v) {
-    for (auto &i: v) {
-        i.move({0, 0, 0}, M_PI / 8, 0, 0);
-        i.move({0, 0, 0}, 0, -M_PI / 4, 0);
+    FRot(v);
+}
 
-        i.move({0, 0, 0}, 0, -M_PI / (360 * 50), 0);
+void FRot(vector<Polygon>& v) {
+    for(int i = 33; i < 54; i++)
+        v[i].move({0, 0, 0}, 0, 0, -M_PI / 2);
+}
 
-        i.move({0, 0, 0}, 0, M_PI / 4, 0);
-        i.move({0, 0, 0}, -M_PI / 8, 0, 0);
-    }
+void _FRot(vector<Polygon>& v) {
+    for(int i = 33; i < 54; i++)
+        v[i].move({0, 0, 0}, 0, 0, M_PI / 2);
+}
+
+void BRot(vector<Polygon>& v) {
+    for(auto &i: v)
+        i.move({0, 0, 0}, 0, M_PI, 0);
+    std::sort(begin(v), end(v), compare);
+    FRot(v);
+    for(auto &i: v)
+        i.move({0, 0, 0}, 0, M_PI, 0);
+}
+
+void _BRot(vector<Polygon>& v) {
+    for(auto &i: v)
+        i.move({0, 0, 0}, 0, M_PI, 0);
+    std::sort(begin(v), end(v), compare);
+    _FRot(v);
+    for(auto &i: v)
+        i.move({0, 0, 0}, 0, M_PI, 0);
 }
