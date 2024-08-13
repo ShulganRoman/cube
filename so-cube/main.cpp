@@ -5,7 +5,7 @@
 using namespace std;
 using namespace sf;
 
-RenderWindow window(VideoMode(2000, 600), "hello");
+RenderWindow window(VideoMode(2000, 1000), "hello");
 
 float Ox = window.getSize().x % 2 == 0 ? float(window.getSize().x + 1) / 2 : float(window.getSize().x) / 2;
 float Oy = window.getSize().y % 2 == 0 ? float(window.getSize().y + 1) / 2 : float(window.getSize().y) / 2;
@@ -113,32 +113,20 @@ bool compare(const Polygon& left,  const Polygon& right) {
     return left > right;
 }
 
-void rotate(vector<Polygon>& v, float delta);
+[[maybe_unused]] void rotate(vector<Polygon>& v, float delta);
 
 int main() {
     //init
     float a = 130;
     float x, y, z, alpha, beta, gamma;
     vector<vector<vector<Vector3f>>> v(6, vector<vector<Vector3f>>(9, vector<Vector3f>(4)));
-
-    vector<Polygon> white_side;
-    vector<Polygon> yellow_side;
-    vector<Polygon> blue_side;
-    vector<Polygon> green_side;
-    vector<Polygon> orange_side;
-    vector<Polygon> red_side;
-
     vector<Color> colors = {Color::White, Color::Yellow, Color::Blue,
                             Color::Green, Color(255, 165, 0, 255), Color::Red};
+    vector<Polygon> sides;
 
-    for (int i = 0; i < 9; i++) {
-        white_side.emplace_back(600);
-        yellow_side.emplace_back(600);
-        blue_side.emplace_back(600);
-        green_side.emplace_back(600);
-        orange_side.emplace_back(600);
-        red_side.emplace_back(600);
-    }
+    for (int i = 0; i < 9 * 6; i++)
+        sides.emplace_back(600);
+
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             for (int k = 0, flag; k < 4; k++) {
@@ -151,23 +139,33 @@ int main() {
                 flag /= 2;
                 v[5][i * 3 + j][k] += Vector3f(0, 0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a);
                 flag = k;
-                v[2][i * 3 + j][k] = Vector3f(-a, float(5 * (j + 1) + 80 * j + 80 * (flag % 2)) - a, 0);
+                v[3][i * 3 + j][k] = Vector3f(-a, float(5 * (j + 1) + 80 * j + 80 * (flag % 2)) - a, 0);
                 flag /= 2;
-                v[2][i * 3 + j][k] += Vector3f(0, 0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a);
+                v[3][i * 3 + j][k] += Vector3f(0, 0, float(5 * (i + 1) + 80 * i + 80 * (flag % 2)) - a);
+                flag = k;
+                v[1][i * 3 + j][k] = Vector3f(a - float(5 * (j + 1) + 80 * j + 80 * (flag % 2)), 0, a);
+                flag /= 2;
+                v[1][i * 3 + j][k] += Vector3f(0, a - float(5 * (i + 1) + 80 * i + 80 * (flag % 2)), 0);
+                flag = k;
+                v[4][i * 3 + j][k] = Vector3f(a - float(5 * (j + 1) + 80 * j + 80 * (flag % 2)), a, 0);
+                flag /= 2;
+                v[4][i * 3 + j][k] += Vector3f(0, 0, a - float(5 * (i + 1) + 80 * i + 80 * (flag % 2)));
+                flag = k;
+                v[2][i * 3 + j][k] = Vector3f(a, a - float(5 * (j + 1) + 80 * j + 80 * (flag % 2)), 0);
+                flag /= 2;
+                v[2][i * 3 + j][k] += Vector3f(0, 0, a - float(5 * (i + 1) + 80 * i + 80 * (flag % 2)));
             }
         }
-    }
+    } //create polygons
 
-    for (int i = 0; i < 9; i++) {
-        white_side[i].setUp(v[0][i], Color::White);
-        white_side[i].move({0, 0, 600}, 0, 0, 0);
-
-        yellow_side[i].setUp(v[5][i], Color::Red);
-        yellow_side[i].move({0, 0, 600}, 0, 0, 0);
-
-        green_side[i].setUp(v[2][i], Color::Green);
-        green_side[i].move({0, 0, 600}, 0, 0, 0);
-    }
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 9; j++) {
+            sides[i * 9 + j].setUp(v[i][j], colors[i]);
+            sides[i * 9 + j].move({0, 0, 600}, M_PI / 2, 0, 0);
+            sides[i * 9 + j].move({0, 0, 0}, 0, M_PI / 4, 0);
+            sides[i * 9 + j].move({0, 0, 0}, -M_PI / 8, 0, 0);
+        }
+    } //setup/move
 
     while (window.isOpen()) {
         Event event{};
@@ -191,26 +189,16 @@ int main() {
                 if (event.key.code == sf::Keyboard::I) gamma = -M_PI / 60;
                 if (event.key.code == sf::Keyboard::K) gamma = M_PI / 60;
 
-                for (auto &i: white_side)
+                for (auto &i: sides)
                     i.move({x, y, z}, alpha, beta, gamma);
-            }
+            } //press key check
         }
 
         window.clear();
 
-        rotate(white_side);
-        rotate(yellow_side);
-        rotate(green_side);
-
-        std::sort(begin(white_side), end(white_side), compare);
-        std::sort(begin(yellow_side), end(yellow_side), compare);
-        std::sort(begin(green_side), end(green_side), compare);
-
-        for (auto i: yellow_side)
-            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
-        for (auto i: green_side)
-            window.draw(&i.getVer()[0], i.size(), TriangleStrip);
-        for (auto i: white_side)
+        rotate(sides);
+        std::sort(begin(sides), end(sides), compare);
+        for (auto i: sides)
             window.draw(&i.getVer()[0], i.size(), TriangleStrip);
         window.display();
     }
@@ -218,12 +206,12 @@ int main() {
 
 void rotate(vector<Polygon>& v) {
     for (auto &i: v) {
-//        i.move({0, 0, 0}, M_PI / 8, 0, 0);
-//        i.move({0, 0, 0}, 0, -M_PI / 4, 0);
+        i.move({0, 0, 0}, M_PI / 8, 0, 0);
+        i.move({0, 0, 0}, 0, -M_PI / 4, 0);
 
         i.move({0, 0, 0}, 0, -M_PI / (360 * 50), 0);
 
-//        i.move({0, 0, 0}, 0, M_PI / 4, 0);
-//        i.move({0, 0, 0}, -M_PI / 8, 0, 0);
+        i.move({0, 0, 0}, 0, M_PI / 4, 0);
+        i.move({0, 0, 0}, -M_PI / 8, 0, 0);
     }
 }
