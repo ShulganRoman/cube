@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(SFML 2.5 COMPONENTS system graphics audio REQUIRED)
 
 add_executable(so_cube main.cpp
-        camstream.h)
+        camstream.h
+        Polygon.h)
 
 target_link_libraries(so_cube sfml-system sfml-graphics sfml-audio)
