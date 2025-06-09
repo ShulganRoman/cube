@@ -16,8 +16,6 @@ bool compare(const Polygon &left, const Polygon &right) {
     return left > right;
 }
 
-[[maybe_unused]] void rotate(vector<Polygon>& v, float delta);
-
 int main() {
     vector<Color> colors = {Color::White, Color::Red, Color::Yellow, Color(255, 165, 0, 255), Color::Green, Color::Blue};
     vector<vector<Vector3f>> vv(9, vector<Vector3f>(4));
